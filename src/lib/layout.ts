@@ -1,21 +1,45 @@
 /**
- * A4 縦への面付け計算（単位: mm）。
- * 100×70mm の名札を 2列×4行 = 8枚/ページ で隙間なく並べ、用紙の左上に寄せる。
- * 左辺・上辺は用紙の端がそのまま名札の端になるので、切るのは右と下の余り（10mm / 17mm）だけ。
+ * 用紙へのマス目の面付け計算（単位: mm）。
+ * マスは隙間なく並べて用紙の左上に寄せる。左辺・上辺は用紙の端がそのままマスの端になるので、
+ * ハサミで切るのは右と下の余りだけで済む。
  */
 
-export const PAGE = { width: 210, height: 297 } as const
-export const BADGE = { width: 100, height: 70 } as const
-export const GRID = { cols: 2, rows: 4 } as const
-export const BADGES_PER_PAGE = GRID.cols * GRID.rows
+export interface Size {
+  width: number
+  height: number
+}
 
-/** 名札全体の左上の位置（用紙の左上に寄せる） */
-export const MARGIN = { x: 0, y: 0 } as const
+export interface GridSpec {
+  page: Size & { orientation: 'portrait' | 'landscape' }
+  cell: Size
+  cols: number
+  rows: number
+  /** マスを埋める向き。row = 左から右へ（行ごと）、column = 上から下へ（列ごと） */
+  fill: 'row' | 'column'
+}
 
-export interface BadgeSlot {
+/** 名札: A4 縦に 100×70mm を 2列×4行。右 10mm / 下 17mm が余り */
+export const BADGE_GRID: GridSpec = {
+  page: { width: 210, height: 297, orientation: 'portrait' },
+  cell: { width: 100, height: 70 },
+  cols: 2,
+  rows: 4,
+  fill: 'row',
+}
+
+/** 食器用名札: A4 横をよこ4×たて8 で割り切る（74.25×26.25mm、余りなし）。左上から下へ埋める */
+export const TABLEWARE_GRID: GridSpec = {
+  page: { width: 297, height: 210, orientation: 'landscape' },
+  cell: { width: 297 / 4, height: 210 / 8 },
+  cols: 4,
+  rows: 8,
+  fill: 'column',
+}
+
+export interface Slot {
   /** 0 始まりのページ番号 */
   page: number
-  /** 名札左上の座標 */
+  /** マス左上の座標 */
   x: number
   y: number
 }
@@ -27,41 +51,49 @@ export interface Line {
   y2: number
 }
 
-/** n 枚目（0 始まり）の名札の配置位置 */
-export function slotOf(index: number): BadgeSlot {
-  const page = Math.floor(index / BADGES_PER_PAGE)
-  const inPage = index % BADGES_PER_PAGE
-  const col = inPage % GRID.cols
-  const row = Math.floor(inPage / GRID.cols)
+export const cellsPerPage = (spec: GridSpec) => spec.cols * spec.rows
+
+/** n 番目（0 始まり）のマスの位置 */
+export function slotOf(spec: GridSpec, index: number): Slot {
+  const perPage = cellsPerPage(spec)
+  const inPage = index % perPage
+  const [col, row] =
+    spec.fill === 'row'
+      ? [inPage % spec.cols, Math.floor(inPage / spec.cols)]
+      : [Math.floor(inPage / spec.rows), inPage % spec.rows]
   return {
-    page,
-    x: MARGIN.x + col * BADGE.width,
-    y: MARGIN.y + row * BADGE.height,
+    page: Math.floor(index / perPage),
+    x: col * spec.cell.width,
+    y: row * spec.cell.height,
   }
 }
 
-export function pageCount(badgeCount: number): number {
-  return Math.ceil(badgeCount / BADGES_PER_PAGE)
+export function pageCount(spec: GridSpec, count: number): number {
+  return Math.ceil(count / cellsPerPage(spec))
 }
 
-/** 最終ページの余り枠の数（手書き用の名札で埋める） */
-export function blankCount(badgeCount: number): number {
-  return pageCount(badgeCount) * BADGES_PER_PAGE - badgeCount
+/** 最終ページの余りマスの数 */
+export function blankCount(spec: GridSpec, count: number): number {
+  return pageCount(spec, count) * cellsPerPage(spec) - count
 }
+
+/** 浮動小数の誤差で用紙の端と判定し損ねないための許容差 */
+const EPSILON = 1e-6
 
 /**
- * カットライン。ハサミでまっすぐ切れるよう、名札の境界線を用紙の端から端まで引く。
+ * カットライン。ハサミでまっすぐ切れるよう、マスの境界線を用紙の端から端まで引く。
  * 用紙の端と重なる線は不要なので引かない。
  */
-export function cutLines(): Line[] {
+export function cutLines(spec: GridSpec): Line[] {
+  const { page, cell } = spec
   const lines: Line[] = []
-  for (let c = 0; c <= GRID.cols; c++) {
-    const x = MARGIN.x + c * BADGE.width
-    if (x > 0 && x < PAGE.width) lines.push({ x1: x, y1: 0, x2: x, y2: PAGE.height })
+  for (let c = 1; c <= spec.cols; c++) {
+    const x = c * cell.width
+    if (x < page.width - EPSILON) lines.push({ x1: x, y1: 0, x2: x, y2: page.height })
   }
-  for (let r = 0; r <= GRID.rows; r++) {
-    const y = MARGIN.y + r * BADGE.height
-    if (y > 0 && y < PAGE.height) lines.push({ x1: 0, y1: y, x2: PAGE.width, y2: y })
+  for (let r = 1; r <= spec.rows; r++) {
+    const y = r * cell.height
+    if (y < page.height - EPSILON) lines.push({ x1: 0, y1: y, x2: page.width, y2: y })
   }
   return lines
 }

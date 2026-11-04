@@ -1,13 +1,10 @@
-import { jsPDF } from 'jspdf'
-import type { BadgeData, LogoMap } from '@/types'
-import { employmentColor } from './employment'
-import { BADGE, blankCount, cutLines, slotOf } from './layout'
+import type { jsPDF } from 'jspdf'
+import type { LogoMap, MasterRow } from '@/types'
+import { employmentColor } from '../employment'
+import { BADGE_GRID, blankCount } from '../layout'
+import { FONT_FAMILY, drawGrid, fitFontSize } from './common'
 
-const FONT_FAMILY = 'BIZUDPGothic'
-const FONT_FILES = {
-  normal: 'BIZUDPGothic-Regular.ttf',
-  bold: 'BIZUDPGothic-Bold.ttf',
-} as const
+const BADGE = BADGE_GRID.cell
 
 /** 名札内のレイアウト（名札左上からの相対位置, mm） */
 const PADDING = 5
@@ -28,62 +25,21 @@ const BLANK_NAME = { labelY: 18, lineY: 41, labelSize: 8 }
 /** コメント欄の見出し（質問文） */
 const COMMENT_LABEL = { maxSize: 8, minSize: 5, maxWidth: INNER_WIDTH - 4 }
 
-export interface PdfOptions {
-  /** フォントを置いているディレクトリの URL（末尾 / 付き） */
-  fontBaseUrl: string
+export interface BadgePdfOptions {
   /** 雇用区分を印刷するか */
   printEmployment: boolean
   /** コメント欄の見出し（質問文）。空なら描かない */
   commentLabel: string
 }
 
-type FontData = Record<keyof typeof FONT_FILES, string>
-let fontCache: Promise<FontData> | null = null
-
-function loadFonts(baseUrl: string): Promise<FontData> {
-  fontCache ??= (async () => {
-    const [normal, bold] = await Promise.all(
-      [FONT_FILES.normal, FONT_FILES.bold].map(async (file) => {
-        const res = await fetch(baseUrl + file)
-        if (!res.ok) throw new Error(`フォントを読み込めませんでした: ${file}`)
-        return arrayBufferToBase64(await res.arrayBuffer())
-      }),
-    )
-    return { normal: normal!, bold: bold! }
-  })().catch((e: unknown) => {
-    fontCache = null // 失敗したら次回やり直せるようにする
-    throw e
-  })
-  return fontCache
-}
-
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
-  const bytes = new Uint8Array(buffer)
-  let binary = ''
-  const chunk = 0x8000
-  for (let i = 0; i < bytes.length; i += chunk) {
-    binary += String.fromCharCode(...bytes.subarray(i, i + chunk))
-  }
-  return btoa(binary)
-}
-
-/** 最大幅に収まるフォントサイズ(pt)を設定して返す */
-function fitFontSize(doc: jsPDF, text: string, maxWidth: number, maxSize: number, minSize: number) {
-  doc.setFontSize(maxSize)
-  const width = doc.getTextWidth(text)
-  const size = width > maxWidth ? Math.max(minSize, (maxSize * maxWidth) / width) : maxSize
-  doc.setFontSize(size)
-  return size
-}
-
 function drawBadge(
   doc: jsPDF,
-  badge: BadgeData,
+  badge: MasterRow,
   x: number,
   y: number,
   logos: LogoMap,
   logoAliases: Map<string, string>,
-  options: PdfOptions,
+  options: BadgePdfOptions,
 ) {
   // 左上: ロゴ（未登録なら所属名テキスト）
   const logo = logos[badge.affiliation]
@@ -141,7 +97,7 @@ function drawBadge(
 }
 
 /** 手書き用の名札（名前も手書き）。最終ページの余り枠に使う */
-function drawBlankBadge(doc: jsPDF, x: number, y: number, options: PdfOptions) {
+function drawBlankBadge(doc: jsPDF, x: number, y: number, options: BadgePdfOptions) {
   doc.setFont(FONT_FAMILY, 'normal')
   doc.setFontSize(BLANK_NAME.labelSize)
   doc.setTextColor(90)
@@ -154,7 +110,7 @@ function drawBlankBadge(doc: jsPDF, x: number, y: number, options: PdfOptions) {
 }
 
 /** 下段: 一言コメント欄（当日手書き） */
-function drawCommentBox(doc: jsPDF, x: number, y: number, options: PdfOptions) {
+function drawCommentBox(doc: jsPDF, x: number, y: number, options: BadgePdfOptions) {
   doc.setDrawColor(170)
   doc.setLineWidth(0.3)
   doc.roundedRect(
@@ -175,41 +131,25 @@ function drawCommentBox(doc: jsPDF, x: number, y: number, options: PdfOptions) {
   }
 }
 
-function drawCutLines(doc: jsPDF) {
-  doc.setDrawColor(200)
-  doc.setLineWidth(0.2)
-  for (const l of cutLines()) doc.line(l.x1, l.y1, l.x2, l.y2)
-}
-
-export async function generateBadgePdf(
-  badges: BadgeData[],
+/** 名札のページを描く。最終ページの余り枠は手書き用の名札で埋める */
+export function drawBadgePages(
+  doc: jsPDF,
+  badges: MasterRow[],
   logos: LogoMap,
-  options: PdfOptions,
-): Promise<jsPDF> {
-  if (badges.length === 0) throw new Error('参加者がいません')
-
-  const fonts = await loadFonts(options.fontBaseUrl)
-  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' })
-  doc.addFileToVFS(FONT_FILES.normal, fonts.normal)
-  doc.addFont(FONT_FILES.normal, FONT_FAMILY, 'normal')
-  doc.addFileToVFS(FONT_FILES.bold, fonts.bold)
-  doc.addFont(FONT_FILES.bold, FONT_FAMILY, 'bold')
-
+  options: BadgePdfOptions,
+  startOnNewPage: boolean,
+) {
   const logoAliases = new Map<string, string>()
-  let currentPage = 0
-  const total = badges.length + blankCount(badges.length)
-  for (let i = 0; i < total; i++) {
-    const slot = slotOf(i)
-    if (slot.page !== currentPage) {
-      drawCutLines(doc)
-      doc.addPage()
-      currentPage = slot.page
-    }
-    const badge = badges[i]
-    if (badge) drawBadge(doc, badge, slot.x, slot.y, logos, logoAliases, options)
-    else drawBlankBadge(doc, slot.x, slot.y, options)
-  }
-  drawCutLines(doc)
-
-  return doc
+  const total = badges.length + blankCount(BADGE_GRID, badges.length)
+  drawGrid(
+    doc,
+    BADGE_GRID,
+    total,
+    (i, { x, y }) => {
+      const badge = badges[i]
+      if (badge) drawBadge(doc, badge, x, y, logos, logoAliases, options)
+      else drawBlankBadge(doc, x, y, options)
+    },
+    startOnNewPage,
+  )
 }

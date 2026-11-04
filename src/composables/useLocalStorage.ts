@@ -2,12 +2,14 @@ import { ref, watch, type Ref } from 'vue'
 
 /**
  * localStorage と同期する ref。
+ * 読み込んだ値は normalize で現在の形にそろえる（項目が増えても既存データを捨てずに済むように）。
+ * normalize が undefined を返したら defaultValue を使う。
  * 保存に失敗した場合（容量超過など）は error にメッセージを入れる。値はメモリ上には残る。
  */
 export function useLocalStorage<T>(
   key: string,
   defaultValue: T,
-  isValid: (value: unknown) => value is T,
+  normalize: (value: unknown) => T | undefined,
 ): { state: Ref<T>; error: Ref<string | null> } {
   const error = ref<string | null>(null)
   const state = ref(load()) as Ref<T>
@@ -16,8 +18,7 @@ export function useLocalStorage<T>(
     try {
       const raw = localStorage.getItem(key)
       if (raw === null) return defaultValue
-      const parsed: unknown = JSON.parse(raw)
-      return isValid(parsed) ? parsed : defaultValue
+      return normalize(JSON.parse(raw)) ?? defaultValue
     } catch {
       return defaultValue
     }

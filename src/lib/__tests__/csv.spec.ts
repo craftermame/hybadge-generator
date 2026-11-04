@@ -19,13 +19,18 @@ describe('decodeCsv', () => {
 })
 
 describe('parseCsv', () => {
-  it('名札記載名・所属・雇用区分を読み込む', () => {
+  it('名札記載名・食器記載名・所属・雇用区分を読み込む', () => {
     const { rows, warnings } = parseCsv(
-      '名札記載名,所属,雇用区分\nやまだ,テスト商事,フルタイム\nさとう,,\n',
+      '名札記載名,食器記載名,所属,雇用区分\nやまだ,山田 太郎,テスト商事,フルタイム\nさとう,,,卒業メンバー\n',
     )
     expect(rows).toEqual([
-      { name: 'やまだ', affiliation: 'テスト商事', employment: 'フルタイム' },
-      { name: 'さとう', affiliation: '', employment: '' },
+      {
+        name: 'やまだ',
+        tablewareName: '山田 太郎',
+        affiliation: 'テスト商事',
+        employment: 'フルタイム',
+      },
+      { name: 'さとう', tablewareName: '', affiliation: '', employment: '卒業メンバー' },
     ])
     expect(warnings).toEqual([])
   })
@@ -33,13 +38,22 @@ describe('parseCsv', () => {
   it('旧見出し「名前」や英語の見出しも許容し、前後の空白を除く', () => {
     expect(parseCsv('名前,所属,雇用区分\nやまだ,A社,パートタイム').rows[0]?.name).toBe('やまだ')
     const { rows } = parseCsv(
-      ' Name , Affiliation , Employment \n John , Example Inc. , Full-time ',
+      ' Name , Tableware , Affiliation , Employment \n John , John Smith , Example Inc. , Full-time ',
     )
-    expect(rows).toEqual([{ name: 'John', affiliation: 'Example Inc.', employment: 'Full-time' }])
+    expect(rows).toEqual([
+      {
+        name: 'John',
+        tablewareName: 'John Smith',
+        affiliation: 'Example Inc.',
+        employment: 'Full-time',
+      },
+    ])
   })
 
   it('名札記載名が空の行はスキップして警告する', () => {
-    const { rows, warnings } = parseCsv('名札記載名,所属,雇用区分\n,A社,\nやまだ,A社,')
+    const { rows, warnings } = parseCsv(
+      '名札記載名,食器記載名,所属,雇用区分\n,山田,A社,\nやまだ,山田,A社,',
+    )
     expect(rows).toHaveLength(1)
     expect(warnings).toHaveLength(1)
   })
@@ -48,9 +62,9 @@ describe('parseCsv', () => {
     expect(() => parseCsv('foo,bar\n1,2')).toThrow(CsvError)
   })
 
-  it('所属・雇用区分の列がなければ警告して空欄にする', () => {
+  it('食器記載名・所属・雇用区分の列がなければ警告して空欄にする', () => {
     const { rows, warnings } = parseCsv('名札記載名\nやまだ')
-    expect(rows).toEqual([{ name: 'やまだ', affiliation: '', employment: '' }])
-    expect(warnings).toHaveLength(2)
+    expect(rows).toEqual([{ name: 'やまだ', tablewareName: '', affiliation: '', employment: '' }])
+    expect(warnings).toHaveLength(3)
   })
 })

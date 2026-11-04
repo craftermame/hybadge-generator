@@ -1,14 +1,15 @@
 import Papa from 'papaparse'
-import type { BadgeData } from '@/types'
+import type { MasterRow } from '@/types'
 
 const NAME_HEADERS = ['名札記載名', '名前', '氏名', 'name']
 const AFFILIATION_HEADERS = ['所属', '会社', '会社名', 'affiliation', 'company', 'organization']
 const EMPLOYMENT_HEADERS = ['雇用区分', 'employment']
+const TABLEWARE_HEADERS = ['食器記載名', 'tableware']
 
 export class CsvError extends Error {}
 
 export interface CsvParseResult {
-  rows: BadgeData[]
+  rows: MasterRow[]
   /** スキップした行などの注意事項 */
   warnings: string[]
 }
@@ -37,20 +38,22 @@ export function parseCsv(text: string): CsvParseResult {
   const nameKey = findHeader(fields, NAME_HEADERS)
   if (!nameKey) {
     throw new CsvError(
-      `「名札記載名」の列が見つかりません。1行目に「名札記載名,所属,雇用区分」の見出しを入れてください（見つかった見出し: ${fields.join(', ') || 'なし'}）`,
+      `「名札記載名」の列が見つかりません。1行目に「名札記載名,食器記載名,所属,雇用区分」の見出しを入れてください（見つかった見出し: ${fields.join(', ') || 'なし'}）`,
     )
   }
   const affiliationKey = findHeader(fields, AFFILIATION_HEADERS)
   const employmentKey = findHeader(fields, EMPLOYMENT_HEADERS)
+  const tablewareKey = findHeader(fields, TABLEWARE_HEADERS)
 
   const warnings: string[] = []
   if (!affiliationKey) warnings.push('「所属」の列が見つからないため、所属は空欄になります')
   if (!employmentKey) warnings.push('「雇用区分」の列が見つからないため、雇用区分は空欄になります')
+  if (!tablewareKey) warnings.push('「食器記載名」の列が見つからないため、食器用名札は作れません')
 
   const get = (row: Record<string, string | undefined>, key: string | undefined) =>
     key ? (row[key]?.trim() ?? '') : ''
 
-  const rows: BadgeData[] = []
+  const rows: MasterRow[] = []
   result.data.forEach((row, i) => {
     const name = get(row, nameKey)
     if (!name) {
@@ -60,6 +63,7 @@ export function parseCsv(text: string): CsvParseResult {
     }
     rows.push({
       name,
+      tablewareName: get(row, tablewareKey),
       affiliation: get(row, affiliationKey),
       employment: get(row, employmentKey),
     })

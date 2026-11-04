@@ -1,9 +1,10 @@
 export type Rgb = readonly [number, number, number]
 
-/** 雇用区分ごとのラベル色（PDF と画面で共通） */
+/** 雇用区分ごとのチップの色（PDF と画面で共通） */
 const EMPLOYMENT_COLORS: Record<string, Rgb> = {
   フルタイム: [37, 99, 235], // 青
   パートタイム: [234, 88, 12], // オレンジ
+  卒業メンバー: [147, 51, 234], // 紫
 }
 const OTHER_COLOR: Rgb = [107, 114, 128] // グレー
 

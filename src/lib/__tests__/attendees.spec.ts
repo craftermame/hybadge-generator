@@ -1,13 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { mergeParticipation } from '../attendees'
-import type { Attendee, BadgeData } from '@/types'
+import type { Attendee, MasterRow } from '@/types'
 
-const row = (name: string, affiliation = 'A社', employment = ''): BadgeData => ({
+const row = (name: string, affiliation = 'A社', employment = ''): MasterRow => ({
   name,
+  tablewareName: '',
   affiliation,
   employment,
 })
-const attendee = (r: BadgeData, participating: boolean): Attendee => ({ ...r, participating })
+const attendee = (r: MasterRow, participating: boolean): Attendee => ({ ...r, participating })
 
 describe('mergeParticipation', () => {
   it('初回はすべて参加', () => {

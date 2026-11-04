@@ -1,47 +1,71 @@
 import { describe, expect, it } from 'vitest'
-import { BADGE, MARGIN, PAGE, blankCount, cutLines, pageCount, slotOf } from '../layout'
+import {
+  BADGE_GRID,
+  TABLEWARE_GRID,
+  blankCount,
+  cellsPerPage,
+  cutLines,
+  pageCount,
+  slotOf,
+} from '../layout'
 
-describe('layout', () => {
-  it('名札全体は用紙の左上に寄せる', () => {
-    expect(MARGIN).toEqual({ x: 0, y: 0 })
+describe('名札 (BADGE_GRID)', () => {
+  it('A4 縦に 2列×4行 = 8枚', () => {
+    expect(cellsPerPage(BADGE_GRID)).toBe(8)
   })
 
-  it('1ページ目は左上から 2列×4行で並ぶ', () => {
-    expect(slotOf(0)).toEqual({ page: 0, x: 0, y: 0 })
-    expect(slotOf(1)).toEqual({ page: 0, x: 100, y: 0 })
-    expect(slotOf(2)).toEqual({ page: 0, x: 0, y: 70 })
-    expect(slotOf(7)).toEqual({ page: 0, x: 100, y: 210 })
+  it('用紙の左上から 2列×4行で並ぶ', () => {
+    expect(slotOf(BADGE_GRID, 0)).toEqual({ page: 0, x: 0, y: 0 })
+    expect(slotOf(BADGE_GRID, 1)).toEqual({ page: 0, x: 100, y: 0 })
+    expect(slotOf(BADGE_GRID, 2)).toEqual({ page: 0, x: 0, y: 70 })
+    expect(slotOf(BADGE_GRID, 7)).toEqual({ page: 0, x: 100, y: 210 })
+    expect(slotOf(BADGE_GRID, 8)).toEqual({ page: 1, x: 0, y: 0 })
   })
 
-  it('9枚目から2ページ目', () => {
-    expect(slotOf(8)).toEqual({ page: 1, x: 0, y: 0 })
-  })
-
-  it('全名札が用紙内に収まる', () => {
+  it('全マスが用紙内に収まる', () => {
     for (let i = 0; i < 8; i++) {
-      const s = slotOf(i)
-      expect(s.x + BADGE.width).toBeLessThanOrEqual(PAGE.width)
-      expect(s.y + BADGE.height).toBeLessThanOrEqual(PAGE.height)
+      const s = slotOf(BADGE_GRID, i)
+      expect(s.x + BADGE_GRID.cell.width).toBeLessThanOrEqual(BADGE_GRID.page.width)
+      expect(s.y + BADGE_GRID.cell.height).toBeLessThanOrEqual(BADGE_GRID.page.height)
     }
   })
 
-  it('ページ数', () => {
-    expect(pageCount(0)).toBe(0)
-    expect(pageCount(1)).toBe(1)
-    expect(pageCount(8)).toBe(1)
-    expect(pageCount(9)).toBe(2)
-  })
-
-  it('最終ページの余り枠の数', () => {
-    expect(blankCount(0)).toBe(0)
-    expect(blankCount(1)).toBe(7)
-    expect(blankCount(8)).toBe(0)
-    expect(blankCount(10)).toBe(6)
+  it('ページ数と余りマス', () => {
+    expect(pageCount(BADGE_GRID, 0)).toBe(0)
+    expect(pageCount(BADGE_GRID, 8)).toBe(1)
+    expect(pageCount(BADGE_GRID, 9)).toBe(2)
+    expect(blankCount(BADGE_GRID, 0)).toBe(0)
+    expect(blankCount(BADGE_GRID, 1)).toBe(7)
+    expect(blankCount(BADGE_GRID, 8)).toBe(0)
+    expect(blankCount(BADGE_GRID, 10)).toBe(6)
   })
 
   it('カットラインは用紙の端と重なる線を除いて縦2本・横4本', () => {
-    const lines = cutLines()
+    const lines = cutLines(BADGE_GRID)
     expect(lines.filter((l) => l.x1 === l.x2).map((l) => l.x1)).toEqual([100, 200])
     expect(lines.filter((l) => l.y1 === l.y2).map((l) => l.y1)).toEqual([70, 140, 210, 280])
+  })
+})
+
+describe('食器用名札 (TABLEWARE_GRID)', () => {
+  it('A4 横に よこ4×たて8 = 32枚、余りなし', () => {
+    expect(cellsPerPage(TABLEWARE_GRID)).toBe(32)
+    expect(TABLEWARE_GRID.cell.width * 4).toBeCloseTo(297)
+    expect(TABLEWARE_GRID.cell.height * 8).toBeCloseTo(210)
+  })
+
+  it('左上から下へ並び、9枚目で次の列', () => {
+    expect(slotOf(TABLEWARE_GRID, 0)).toEqual({ page: 0, x: 0, y: 0 })
+    expect(slotOf(TABLEWARE_GRID, 1)).toEqual({ page: 0, x: 0, y: 26.25 })
+    expect(slotOf(TABLEWARE_GRID, 7)).toEqual({ page: 0, x: 0, y: 183.75 })
+    expect(slotOf(TABLEWARE_GRID, 8)).toEqual({ page: 0, x: 74.25, y: 0 })
+    expect(slotOf(TABLEWARE_GRID, 31)).toEqual({ page: 0, x: 222.75, y: 183.75 })
+    expect(slotOf(TABLEWARE_GRID, 32)).toEqual({ page: 1, x: 0, y: 0 })
+  })
+
+  it('用紙を割り切るので、カットラインは内側の縦3本・横7本だけ', () => {
+    const lines = cutLines(TABLEWARE_GRID)
+    expect(lines.filter((l) => l.x1 === l.x2)).toHaveLength(3)
+    expect(lines.filter((l) => l.y1 === l.y2)).toHaveLength(7)
   })
 })
