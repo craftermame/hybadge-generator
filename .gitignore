@@ -37,3 +37,10 @@ __screenshots__/
 
 # Vite
 *.timestamp-*-*.mjs
+
+# Claude Code (personal settings)
+.claude/settings.local.json
+
+# 参加者データ（個人情報）はコミットしない。サンプルのみ許可
+*.csv
+!samples/*.csv

@@ -12,14 +12,19 @@
     "lint": "run-s \"lint:*\"",
     "lint:oxlint": "oxlint . --fix",
     "lint:eslint": "eslint . --fix --cache",
-    "format": "prettier --write --experimental-cli src/"
+    "format": "prettier --write --experimental-cli src/",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
+    "jspdf": "^4.2.1",
+    "papaparse": "^5.7.0",
     "vue": "^3.5.42"
   },
   "devDependencies": {
     "@tsconfig/node24": "^24.0.5",
     "@types/node": "^24.13.4",
+    "@types/papaparse": "^5.5.2",
     "@vitejs/plugin-vue": "^6.0.8",
     "@vue/eslint-config-typescript": "^14.9.0",
     "@vue/tsconfig": "^0.9.1",
@@ -34,6 +39,7 @@
     "typescript": "~6.0.0",
     "vite": "^8.2.2",
     "vite-plugin-vue-devtools": "^8.2.1",
+    "vitest": "^5.1.0",
     "vue-eslint-parser": "^10.4.1",
     "vue-tsc": "^3.3.11"
   },
