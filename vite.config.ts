@@ -6,6 +6,8 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // GitHub Pages はリポジトリ名のサブパス（https://craftermame.github.io/hybadge-generator/）で公開される
+  base: '/hybadge-generator/',
   plugins: [
     vue(),
     vueDevTools(),

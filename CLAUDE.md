@@ -39,7 +39,8 @@ GitHub Pages で公開する静的 SPA（サーバーなし）。画面は1つ�
 - CSV: PapaParse
 - Lint/Format: oxlint + ESLint + Prettier
 - テスト: Vitest（純粋関数のロジックを対象）
-- デプロイ: GitHub Actions → GitHub Pages（`vite.config.ts` の `base` は `/hybadge-generator/`）
+- デプロイ: main への push で GitHub Actions（`.github/workflows/deploy.yml`）がテスト・ビルドして GitHub Pages に公開する
+  - 公開 URL: https://craftermame.github.io/hybadge-generator/ （`vite.config.ts` の `base` は `/hybadge-generator/`）
 
 ## コマンド
 - `npm run dev` 開発サーバー
