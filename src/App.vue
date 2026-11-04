@@ -58,7 +58,7 @@ function clearAll() {
 
 <template>
   <main>
-    <h1>名札ジェネレーター</h1>
+    <h1>HyBadge Generator</h1>
     <p class="hint">
       首掛けストラップ用の名札（A4 縦）と、パーティーで食器につける名札（A4 横）を1つの PDF
       で作ります
