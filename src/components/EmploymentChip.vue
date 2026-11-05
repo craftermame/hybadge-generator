@@ -1,13 +1,19 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { employmentColor, rgbToCss } from '@/lib/employment'
+import { employmentStyle, rgbToCss } from '@/lib/employment'
 
 const props = defineProps<{ employment: string }>()
-const color = computed(() => rgbToCss(employmentColor(props.employment)))
+const style = computed(() => {
+  const { background, text } = employmentStyle(props.employment)
+  const color = rgbToCss(text)
+  return background
+    ? { color, backgroundColor: rgbToCss(background), borderColor: rgbToCss(background) }
+    : { color, borderColor: color }
+})
 </script>
 
 <template>
-  <span class="chip" :style="{ color, borderColor: color }">{{ employment }}</span>
+  <span class="chip" :style="style">{{ employment }}</span>
 </template>
 
 <style scoped>

@@ -1,6 +1,6 @@
 import type { jsPDF } from 'jspdf'
 import type { LogoMap, MasterRow } from '@/types'
-import { employmentColor } from '../employment'
+import { employmentStyle } from '../employment'
 import { BADGE_GRID, blankCount } from '../layout'
 import { FONT_FAMILY, drawGrid, fitFontSize } from './common'
 
@@ -16,7 +16,7 @@ const HEADER_CENTER_Y = HEADER.top + HEADER.height / 2
 const LOGO = { maxWidth: 40, maxHeight: HEADER.height }
 /** ロゴ未登録時の所属名テキスト */
 const AFFILIATION_TEXT = { maxWidth: 55, maxSize: 10, minSize: 6 }
-/** 雇用区分は右上に色付きのチップ（枠線＋文字色）で表示 */
+/** 雇用区分は右上に色付きのチップ（背景色＋文字色）で表示 */
 const EMPLOYMENT = { fontSize: 10, paddingX: 2.5, height: 6, lineWidth: 0.4 }
 const NAME = { centerY: 31, maxSize: 48, minSize: 16, maxWidth: INNER_WIDTH - 4 }
 const COMMENT_BOX = { top: 46, height: BADGE.height - PADDING - 46, radius: 2 }
@@ -68,18 +68,24 @@ function drawBadge(
     doc.text(badge.affiliation, x + PADDING, y + HEADER_CENTER_Y, { baseline: 'middle' })
   }
 
-  // 右上: 雇用区分チップ（雇用区分ごとに枠線と文字の色を変える）
+  // 右上: 雇用区分チップ（雇用区分ごとに背景色と文字色を変える。未定義の値は灰色の枠線）
   if (options.printEmployment && badge.employment) {
-    const color = employmentColor(badge.employment)
+    const style = employmentStyle(badge.employment)
     doc.setFont(FONT_FAMILY, 'bold')
     doc.setFontSize(EMPLOYMENT.fontSize)
     const w = doc.getTextWidth(badge.employment) + EMPLOYMENT.paddingX * 2
     const right = x + BADGE.width - PADDING
     const r = EMPLOYMENT.height / 2
-    doc.setDrawColor(...color)
-    doc.setLineWidth(EMPLOYMENT.lineWidth)
-    doc.roundedRect(right - w, y + HEADER_CENTER_Y - r, w, EMPLOYMENT.height, r, r, 'S')
-    doc.setTextColor(...color)
+    const top = y + HEADER_CENTER_Y - r
+    if (style.background) {
+      doc.setFillColor(...style.background)
+      doc.roundedRect(right - w, top, w, EMPLOYMENT.height, r, r, 'F')
+    } else {
+      doc.setDrawColor(...style.text)
+      doc.setLineWidth(EMPLOYMENT.lineWidth)
+      doc.roundedRect(right - w, top, w, EMPLOYMENT.height, r, r, 'S')
+    }
+    doc.setTextColor(...style.text)
     doc.text(badge.employment, right - w / 2, y + HEADER_CENTER_Y, {
       align: 'center',
       baseline: 'middle',

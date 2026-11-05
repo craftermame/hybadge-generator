@@ -44,3 +44,6 @@ __screenshots__/
 # 参加者データ（個人情報）はコミットしない。サンプルのみ許可
 *.csv
 !samples/*.csv
+
+# プレビュー用に生成した PDF・画像
+/preview/
