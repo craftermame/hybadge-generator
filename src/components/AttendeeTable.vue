@@ -19,7 +19,7 @@ const { attendees, participants } = store
         <th>名札記載名</th>
         <th>食器記載名</th>
         <th>所属</th>
-        <th>雇用区分</th>
+        <th>雇用形態</th>
       </tr>
     </thead>
     <tbody>

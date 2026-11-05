@@ -27,7 +27,7 @@ async function onSelected(e: Event) {
 
 <template>
   <p class="hint">
-    1行目に「名札記載名,食器記載名,所属,雇用区分」の見出しを入れてください（UTF-8 / Shift_JIS
+    1行目に「名札記載名,食器記載名,所属,雇用形態」の見出しを入れてください（UTF-8 / Shift_JIS
     対応）。名札と食器用名札で共通です。読み直しても参加チェックは引き継がれます
   </p>
   <input type="file" accept=".csv,text/csv" @change="onSelected" />

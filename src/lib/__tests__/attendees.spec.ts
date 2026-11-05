@@ -27,7 +27,7 @@ describe('mergeParticipation', () => {
       ['やまだ', false],
       ['すずき', true],
     ])
-    // 雇用区分など他の値は新しい CSV のものになる
+    // 雇用形態など他の値は新しい CSV のものになる
     expect(next[1]!.employment).toBe('フルタイム')
   })
 

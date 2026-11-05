@@ -5,7 +5,7 @@ export interface MasterRow {
   /** 食器記載名（例: 漢字のフルネーム）。空なら食器用名札を作らない */
   tablewareName: string
   affiliation: string
-  /** 雇用区分（例: パートタイム / フルタイム / 卒業メンバー）。空なら印刷しない */
+  /** 雇用形態（例: パートタイム / フルタイム / 卒業メンバー）。空なら印刷しない */
   employment: string
 }
 
@@ -18,7 +18,7 @@ export interface Attendee extends MasterRow {
 export type LogoMap = Record<string, string>
 
 export interface Settings {
-  /** 雇用区分を名札に印刷するか */
+  /** 雇用形態を名札に印刷するか */
   printEmployment: boolean
   /** コメント欄の見出し（質問文） */
   commentLabel: string

@@ -88,7 +88,7 @@ function clearAll() {
         <p>
           <label>
             <input v-model="settings.printEmployment" type="checkbox" />
-            雇用区分を印刷する
+            雇用形態を印刷する
           </label>
         </p>
         <p>

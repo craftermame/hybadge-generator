@@ -1,6 +1,6 @@
 export type Rgb = readonly [number, number, number]
 
-/** 雇用区分チップの見た目（PDF と画面で共通） */
+/** 雇用形態チップの見た目（PDF と画面で共通） */
 export interface ChipStyle {
   /** 背景色。null なら塗らずに枠線だけ描く */
   background: Rgb | null

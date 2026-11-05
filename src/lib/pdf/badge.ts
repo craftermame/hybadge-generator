@@ -9,14 +9,14 @@ const BADGE = BADGE_GRID.cell
 /** 名札内のレイアウト（名札左上からの相対位置, mm） */
 const PADDING = 5
 const INNER_WIDTH = BADGE.width - PADDING * 2
-/** 上段（ロゴ・雇用区分）の縦位置 */
+/** 上段（ロゴ・雇用形態）の縦位置 */
 const HEADER = { top: PADDING, height: 11 }
 const HEADER_CENTER_Y = HEADER.top + HEADER.height / 2
 /** ロゴは左上に小さく */
 const LOGO = { maxWidth: 40, maxHeight: HEADER.height }
 /** ロゴ未登録時の所属名テキスト */
 const AFFILIATION_TEXT = { maxWidth: 55, maxSize: 10, minSize: 6 }
-/** 雇用区分は右上に色付きのチップ（背景色＋文字色）で表示 */
+/** 雇用形態は右上に色付きのチップ（背景色＋文字色）で表示 */
 const EMPLOYMENT = { fontSize: 10, paddingX: 2.5, height: 6, lineWidth: 0.4 }
 const NAME = { centerY: 31, maxSize: 48, minSize: 16, maxWidth: INNER_WIDTH - 4 }
 const COMMENT_BOX = { top: 46, height: BADGE.height - PADDING - 46, radius: 2 }
@@ -26,7 +26,7 @@ const BLANK_NAME = { labelY: 18, lineY: 41, labelSize: 8 }
 const COMMENT_LABEL = { maxSize: 8, minSize: 5, maxWidth: INNER_WIDTH - 4 }
 
 export interface BadgePdfOptions {
-  /** 雇用区分を印刷するか */
+  /** 雇用形態を印刷するか */
   printEmployment: boolean
   /** コメント欄の見出し（質問文）。空なら描かない */
   commentLabel: string
@@ -68,7 +68,7 @@ function drawBadge(
     doc.text(badge.affiliation, x + PADDING, y + HEADER_CENTER_Y, { baseline: 'middle' })
   }
 
-  // 右上: 雇用区分チップ（雇用区分ごとに背景色と文字色を変える。未定義の値は灰色の枠線）
+  // 右上: 雇用形態チップ（雇用形態ごとに背景色と文字色を変える。未定義の値は灰色の枠線）
   if (options.printEmployment && badge.employment) {
     const style = employmentStyle(badge.employment)
     doc.setFont(FONT_FAMILY, 'bold')
