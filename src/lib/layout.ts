@@ -1,7 +1,7 @@
 /**
  * 用紙へのマス目の面付け計算（単位: mm）。
- * マスは隙間なく並べて用紙の左上に寄せる。左辺・上辺は用紙の端がそのままマスの端になるので、
- * ハサミで切るのは右と下の余りだけで済む。
+ * マスは隙間なく並べて用紙の左上に寄せる。外周は用紙の端がそのままマスの端になるので、
+ * ハサミで切るのはマスの境界だけで済む。
  */
 
 export interface Size {
@@ -18,10 +18,10 @@ export interface GridSpec {
   fill: 'row' | 'column'
 }
 
-/** 名札: A4 縦に 100×70mm を 2列×4行。右 10mm / 下 17mm が余り */
+/** 名札: A4 縦を 2列×4行 で割り切る（105×74.25mm、余りなし） */
 export const BADGE_GRID: GridSpec = {
   page: { width: 210, height: 297, orientation: 'portrait' },
-  cell: { width: 100, height: 70 },
+  cell: { width: 210 / 2, height: 297 / 4 },
   cols: 2,
   rows: 4,
   fill: 'row',

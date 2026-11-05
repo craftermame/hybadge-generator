@@ -16,9 +16,9 @@ describe('名札 (BADGE_GRID)', () => {
 
   it('用紙の左上から 2列×4行で並ぶ', () => {
     expect(slotOf(BADGE_GRID, 0)).toEqual({ page: 0, x: 0, y: 0 })
-    expect(slotOf(BADGE_GRID, 1)).toEqual({ page: 0, x: 100, y: 0 })
-    expect(slotOf(BADGE_GRID, 2)).toEqual({ page: 0, x: 0, y: 70 })
-    expect(slotOf(BADGE_GRID, 7)).toEqual({ page: 0, x: 100, y: 210 })
+    expect(slotOf(BADGE_GRID, 1)).toEqual({ page: 0, x: 105, y: 0 })
+    expect(slotOf(BADGE_GRID, 2)).toEqual({ page: 0, x: 0, y: 74.25 })
+    expect(slotOf(BADGE_GRID, 7)).toEqual({ page: 0, x: 105, y: 222.75 })
     expect(slotOf(BADGE_GRID, 8)).toEqual({ page: 1, x: 0, y: 0 })
   })
 
@@ -42,8 +42,8 @@ describe('名札 (BADGE_GRID)', () => {
 
   it('カットラインは用紙の端と重なる線を除いて縦2本・横4本', () => {
     const lines = cutLines(BADGE_GRID)
-    expect(lines.filter((l) => l.x1 === l.x2).map((l) => l.x1)).toEqual([100, 200])
-    expect(lines.filter((l) => l.y1 === l.y2).map((l) => l.y1)).toEqual([70, 140, 210, 280])
+    expect(lines.filter((l) => l.x1 === l.x2).map((l) => l.x1)).toEqual([105])
+    expect(lines.filter((l) => l.y1 === l.y2).map((l) => l.y1)).toEqual([74.25, 148.5, 222.75])
   })
 })
 

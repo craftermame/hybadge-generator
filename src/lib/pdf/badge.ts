@@ -18,10 +18,10 @@ const LOGO = { maxWidth: 40, maxHeight: HEADER.height }
 const AFFILIATION_TEXT = { maxWidth: 55, maxSize: 10, minSize: 6 }
 /** 雇用形態は右上に色付きのチップ（背景色＋文字色）で表示 */
 const EMPLOYMENT = { fontSize: 10, paddingX: 2.5, height: 6, lineWidth: 0.4 }
-const NAME = { centerY: 31, maxSize: 48, minSize: 16, maxWidth: INNER_WIDTH - 4 }
-const COMMENT_BOX = { top: 46, height: BADGE.height - PADDING - 46, radius: 2 }
+const NAME = { centerY: 32, maxSize: 48, minSize: 16, maxWidth: INNER_WIDTH - 4 }
+const COMMENT_BOX = { top: 48, height: BADGE.height - PADDING - 48, radius: 2 }
 /** 手書き用名札の名前記入欄 */
-const BLANK_NAME = { labelY: 18, lineY: 41, labelSize: 8 }
+const BLANK_NAME = { labelY: 18, lineY: 43, labelSize: 8 }
 /** コメント欄の見出し（質問文） */
 const COMMENT_LABEL = { maxSize: 8, minSize: 5, maxWidth: INNER_WIDTH - 4 }
 

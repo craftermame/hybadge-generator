@@ -84,7 +84,7 @@ function clearAll() {
 
       <section>
         <h2>4. 名札の設定</h2>
-        <p class="hint">100×70mm、A4 縦に 8枚。最終ページの余り枠は手書き用の名札になります</p>
+        <p class="hint">105×74.25mm、A4 縦を 8等分。最終ページの余り枠は手書き用の名札になります</p>
         <p>
           <label>
             <input v-model="settings.printEmployment" type="checkbox" />
